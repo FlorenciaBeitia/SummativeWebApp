@@ -1,0 +1,32 @@
+Test Cases - [Purpose / input / Steps / Expected Result / Actual Result ]
+
+1. Valid Registration
+Purpose: verify normal flow
+input: username= "Eugene" , "Eugene Foruie", email="ef@darkweb.net", age= 55, bio= "Dude wheres my car?"
+Steps: navigate to sit -> open /Register -> submit form
+Expected Result: redirecetd to home, view successfull Registration message & new user appears in list.
+Actual Result: As per Expected.
+
+2. Duplicate username / duplicate email
+Purpose: server-side uniqueness constraints
+Input: register username = jdoe (already inserted sample), or same email
+Steps: submit registration
+Expected : flash error Error saving user: username or email might already exist. (or similar). 
+No duplicate row inserted.
+Actual Result: As per Expected.
+
+
+3. Invalid email format
+Purpose: validation
+Input: email=not-an-email
+Steps: submit registration
+Expected: form validation error shown under the Email field (e.g. Invalid email address.) 
+and no redirect.
+Actual Result: As per Expected.
+
+4. Edge: age = 0 (baby), and age empty
+Purpose: ensure age=0 is stored (not coerced to NULL) and empty age handled gracefully
+Input: age=0 and also submit with empty age
+Steps: register with age=0; register with age field empty
+Expected: for 0 you should see “Age: 0” on the profile page; for empty age you should see — (or blank) on profile.
+Actual Result: As per Expected.
