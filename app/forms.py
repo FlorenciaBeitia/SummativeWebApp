@@ -13,3 +13,4 @@ class ProfileForm(FlaskForm):
     age = IntegerField('Age', validators=[NumberRange(min=0, max=120)], default=0)
     bio = TextAreaField('Bio', validators=[Length(max=500)])
     submit = SubmitField('Save')
+
