@@ -28,3 +28,19 @@ def get_db_connection(db_path: str):
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     return conn
+
+
+def delete_user(db_path: str, user_id: int) -> bool:
+    """Delete a user by id. Returns True if a row was deleted."""
+    conn = sqlite3.connect(db_path)
+    try:
+        cur = conn.execute('DELETE FROM users WHERE id = ?', (user_id,))
+        conn.commit()
+        try:
+            deleted = cur.rowcount > 0
+        except Exception:
+            # Fallback if rowcount is not available
+            deleted = conn.total_changes > 0
+    finally:
+        conn.close()
+    return deleted

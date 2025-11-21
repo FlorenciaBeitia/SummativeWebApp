@@ -1,0 +1,98 @@
+Recommended Flask Project Structure
+
+project_root/
+├── README.md
+├── requirements.txt            # or pyproject.toml / poetry.lock
+├── .gitignore
+├── .env                       # local environment variables (not checked in)
+├── .flaskenv                  # FLASK_APP, FLASK_ENV helpers (optional)
+├── config.py                  # application configuration (defaults)
+├── instance/                  # instance folder for env-specific configs
+│   └── config.py              # instance-specific settings (SECRET_KEY, DB path)
+├── run.py                     # simple app runner (imports app factory)
+├── wsgi.py                    # WSGI entry for production servers
+├── Dockerfile                 # optional containerization
+├── docker-compose.yml         # optional multi-service setup
+├── migrations/                # Alembic/Flask-Migrate files
+├── docs/                      # documentation, design notes
+├── scripts/                   # helper scripts (db seed, maintenance)
+├── tests/
+│   ├── conftest.py
+│   └── test_*.py
+├── ci/ or .github/workflows/  # CI configuration
+└── app/                       # application package (the core)
+    ├── __init__.py            # app factory and blueprint registration
+    ├── extensions.py         # initialize extensions (db, migrate, login, csrf)
+    ├── models.py             # SQLAlchemy models (or models/ package)
+    ├── schemas.py            # (optional) marshmallow / pydantic schemas
+    ├── commands.py           # custom flask CLI commands
+    ├── api/                  # optional REST API blueprint
+    │   ├── __init__.py
+    │   └── routes.py
+    ├── main/                 # main (non-auth) blueprint
+    │   ├── __init__.py
+    │   ├── routes.py
+    │   ├── forms.py
+    │   └── templates/
+    │       └── main/
+    │           ├── index.html
+    │           └── profile.html
+    ├── auth/                 # authentication blueprint
+    │   ├── __init__.py
+    │   ├── routes.py
+    │   ├── forms.py
+    │   └── templates/
+    │       └── auth/
+    │           ├── login.html
+    │           └── register.html
+    ├── templates/            # project-wide templates
+    │   ├── base.html
+    │   └── errors/
+    │       ├── 404.html
+    │       └── 500.html
+    ├── static/               # project-wide static assets
+    │   ├── css/
+    │   │   └── style.css
+    │   ├── js/
+    │   │   └── main.js
+    │   └── images/
+    └── utils/                # small helper modules
+        ├── email.py
+        └── helpers.py
+
+Notes / Best Practices
+- Use an application factory in `app/__init__.py` to create and configure the Flask app.
+- Keep extension initialization (SQLAlchemy, Migrate, LoginManager, CSRFProtect) in `app/extensions.py` and import in factory.
+- Put secrets and environment-specific settings in `instance/config.py` and keep it out of version control.
+- Use Blueprints (`app.main`, `app.auth`, `app.api`) to organize routes and templates.
+- Prefer `wsgi.py` or a production-ready entrypoint and use `run.py` only for local development.
+- Add `migrations/` (Flask-Migrate) for schema changes; use `alembic` for advanced setups.
+- Add automated tests in `tests/` and CI workflows to run them on PRs.
+- Provide `README.md` with setup, run, test, and deployment instructions.
+- Consider optional directories: `deploy/` for k8s/manifests, `docs/` for Sphinx or MkDocs, `notebooks/` if needed.
+
+Example minimal `app/__init__.py` pattern (summary):
+
+from flask import Flask
+from .extensions import db, migrate, login
+
+def create_app(config_object='config.Config'):
+    app = Flask(__name__, instance_relative_config=True)
+    app.config.from_object(config_object)
+    app.config.from_pyfile('config.py', silent=True)
+
+    # Initialize extensions
+    db.init_app(app)
+    migrate.init_app(app, db)
+    login.init_app(app)
+
+    # Register blueprints
+    from .main import bp as main_bp
+    app.register_blueprint(main_bp)
+
+    from .auth import bp as auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+
+    return app
+
+-- End of structure --
